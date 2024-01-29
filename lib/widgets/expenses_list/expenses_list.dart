@@ -1,41 +1,44 @@
 import 'package:flutter/material.dart';
-
 import 'package:expense_tracker/widgets/expenses_list/expense_item.dart';
 import 'package:expense_tracker/models/expense.dart';
 
 class ExpensesList extends StatelessWidget {
   const ExpensesList({
-    super.key,
-    required this.expenses,
-    required this.onRemoveExpense,
-  });
+    Key? key,
+    required this.transactions,
+    required this.onRemoveTransaction,
+  }) : super(key: key);
 
-  final List<Expense> expenses;
-  final void Function(Expense expense) onRemoveExpense;
+  final List<Transaction> transactions;
+  final void Function(Transaction transaction) onRemoveTransaction;
 
   @override
   Widget build(BuildContext context) {
+    final cardTheme = Theme.of(context).cardTheme;
+    final margin = cardTheme?.margin?.horizontal ?? 0;
+
     return ListView.builder(
-      itemCount: expenses.length,
-      itemBuilder: (ctx, index) => 
-      Dismissible(
-        key: ValueKey(expenses[index]),
+      itemCount: transactions.length,
+      itemBuilder: (ctx, index) => Dismissible(
+        key: ValueKey(transactions[index]),
         background: Container(
           color: Colors.red,
-          child: const Align(alignment: Alignment.centerRight,
-          child: Padding(padding: EdgeInsets.all(16),
-          child: Icon(Icons.delete,color: Colors.white),),),
-          
-          // color: Theme.of(context).colorScheme.error.withOpacity(0.75),
-          margin: EdgeInsets.symmetric(
-            horizontal: Theme.of(context).cardTheme.margin!.horizontal,
+          child: Align(
+            alignment: Alignment.centerRight,
+            child: Padding(
+              padding: EdgeInsets.all(16),
+              child: Icon(Icons.delete, color: Colors.white),
+            ),
           ),
+          margin: EdgeInsets.symmetric(horizontal: margin),
         ),
         onDismissed: (direction) {
-          onRemoveExpense(expenses[index]);
+          onRemoveTransaction(transactions[index]);
         },
-        child: ExpenseItem(
-          expenses[index],
+        child: TransactionItem(
+          transaction: transactions[index],
+          onRemoveTransaction: onRemoveTransaction,
+          isCredit: true,
         ),
       ),
     );

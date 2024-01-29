@@ -1,71 +1,59 @@
 import 'package:flutter/material.dart';
-//import 'package:flutter/services.dart';
-
+import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 import 'package:expense_tracker/widgets/expenses.dart';
-
-var kColorScheme = ColorScheme.fromSeed(
-  seedColor: const Color.fromARGB(255, 96, 59, 181),
-);
-
-var kDarkColorScheme = ColorScheme.fromSeed(
-  brightness: Brightness.dark,
-  seedColor: const Color.fromARGB(255, 5, 99, 125),
-);
+import 'package:expense_tracker/theme/theme_provider.dart';
+import 'package:expense_tracker/widgets/settings/currency_notifier.dart';
+import 'package:expense_tracker/main_tab/main_tab.dart';
 
 void main() {
-  // WidgetsFlutterBinding.ensureInitialized();
-  // SystemChrome.setPreferredOrientations([
-  //   DeviceOrientation.portraitUp,
-  // ]).then((fn) {
-    runApp(
-      MaterialApp(
-        darkTheme: ThemeData.dark().copyWith(
-          useMaterial3: true,
-          colorScheme: kDarkColorScheme,
-          cardTheme: const CardTheme().copyWith(
-            color: kDarkColorScheme.secondaryContainer,
-            margin: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 8,
-            ),
-          ),
-          elevatedButtonTheme: ElevatedButtonThemeData(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: kDarkColorScheme.primaryContainer,
-              foregroundColor: kDarkColorScheme.onPrimaryContainer,
-            ),
-          ),
+  WidgetsFlutterBinding.ensureInitialized();
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
+
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (context) => ThemeProvider()),
+        ChangeNotifierProvider(create: (context) => CurrencyNotifier()),
+      ],
+      child: MyApp(),
+    ),
+  );
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+
+    return MaterialApp(
+      theme: ThemeData.light().copyWith(
+        cardTheme: const CardTheme(
+          color: Color.fromARGB(255, 192, 190, 185),
         ),
-        theme: ThemeData().copyWith(
-          useMaterial3: true,
-          colorScheme: kColorScheme,
-          appBarTheme: const AppBarTheme().copyWith(
-            backgroundColor: kColorScheme.onPrimaryContainer,
-            foregroundColor: kColorScheme.primaryContainer,
-          ),
-          cardTheme: const CardTheme().copyWith(
-            color: kColorScheme.secondaryContainer,
-            margin: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 8,
-            ),
-          ),
-          elevatedButtonTheme: ElevatedButtonThemeData(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: kColorScheme.primaryContainer,
-            ),
-          ),
-          textTheme: ThemeData().textTheme.copyWith(
-                titleLarge: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: kColorScheme.onSecondaryContainer,
-                  fontSize: 16,
-                ),
-              ),
+        scaffoldBackgroundColor: Color.fromARGB(255, 255, 255, 255),
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Color.fromRGBO(255, 255, 255, 1),
         ),
-        // themeMode: ThemeMode.system, // default
-        home: const Expenses(),
+      ),
+      darkTheme: ThemeData.dark(),
+      themeMode: themeProvider.getThemeMode(),
+      home: Consumer<CurrencyNotifier>(
+        builder: (context, currencyNotifier, child) {
+          return Expenses(
+            onTransactionAdded: ( amount) {},
+            transactions: [], // Provide a list of transactions here
+            initialIncome: 0.0,
+            onUpdateCurrentIncome: (double updatedCurrentIncome) {
+              // Handle the update of currentIncome in the Income widget
+              // You can pass this function to the Income widget to update its state
+            },
+          );
+        },
       ),
     );
-  // });
+  }
 }
