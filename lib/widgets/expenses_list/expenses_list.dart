@@ -15,7 +15,7 @@ class ExpensesList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cardTheme = Theme.of(context).cardTheme;
-    final margin = cardTheme?.margin?.horizontal ?? 0;
+    final margin = cardTheme.margin?.horizontal ?? 0;
 
     return ListView.builder(
       itemCount: transactions.length,
@@ -23,14 +23,14 @@ class ExpensesList extends StatelessWidget {
         key: ValueKey(transactions[index]),
         background: Container(
           color: Colors.red,
-          child: Align(
+          margin: EdgeInsets.symmetric(horizontal: margin),
+          child: const Align(
             alignment: Alignment.centerRight,
             child: Padding(
               padding: EdgeInsets.all(16),
               child: Icon(Icons.delete, color: Colors.white),
             ),
           ),
-          margin: EdgeInsets.symmetric(horizontal: margin),
         ),
         onDismissed: (direction) {
           onRemoveTransaction(transactions[index]);

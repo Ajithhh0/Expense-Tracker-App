@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import 'package:expense_tracker/widgets/expenses.dart';
 import 'package:expense_tracker/theme/theme_provider.dart';
 import 'package:expense_tracker/widgets/settings/currency_notifier.dart';
-import 'package:expense_tracker/main_tab/main_tab.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -19,12 +18,14 @@ void main() {
         ChangeNotifierProvider(create: (context) => ThemeProvider()),
         ChangeNotifierProvider(create: (context) => CurrencyNotifier()),
       ],
-      child: MyApp(),
+      child: const MyApp(),
     ),
   );
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
@@ -34,7 +35,7 @@ class MyApp extends StatelessWidget {
         cardTheme: const CardTheme(
           color: Color.fromARGB(255, 192, 190, 185),
         ),
-        scaffoldBackgroundColor: Color.fromARGB(255, 255, 255, 255),
+        scaffoldBackgroundColor: const Color.fromARGB(255, 255, 255, 255),
         appBarTheme: const AppBarTheme(
           backgroundColor: Color.fromRGBO(255, 255, 255, 1),
         ),
@@ -45,7 +46,7 @@ class MyApp extends StatelessWidget {
         builder: (context, currencyNotifier, child) {
           return Expenses(
             onTransactionAdded: ( amount) {},
-            transactions: [], // Provide a list of transactions here
+            transactions: const [], // Provide a list of transactions here
             initialIncome: 0.0,
             onUpdateCurrentIncome: (double updatedCurrentIncome) {
               // Handle the update of currentIncome in the Income widget

@@ -33,10 +33,10 @@ class Expenses extends StatefulWidget {
 }
 
 class _ExpensesState extends State<Expenses> with TickerProviderStateMixin {
-  List<Transaction> _registeredTransactions = [];
+  final List<Transaction> _registeredTransactions = [];
   List<Transaction> _displayedTransactions = [];
   bool _isSearching = false;
-  TextEditingController _searchController = TextEditingController();
+  final TextEditingController _searchController = TextEditingController();
   TabController? _tabController;
   double currentIncome = 0.0;
 
@@ -120,7 +120,7 @@ class _ExpensesState extends State<Expenses> with TickerProviderStateMixin {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => SettingsPage(),
+        builder: (context) => const SettingsPage(),
       ),
     );
   }

@@ -46,9 +46,8 @@ class _DailyExpensesState extends State<DailyExpenses> {
     });
   }
 
-  // Modify this method to include positive/negative amounts
   String _getAmountWithSign(double amount) {
-    return (amount >= 0 ? '+' : '-') + ' ${amount.abs()}';
+    return '${amount >= 0 ? '+' : '-'} ${amount.abs()}';
   }
 
   String _getSelectedCurrency() {
@@ -82,7 +81,6 @@ class _DailyExpensesState extends State<DailyExpenses> {
 
   Future<void> _downloadDailyDetails() async {
     if (_totalAmount == null || _transactionDetails.isEmpty) {
-      // No data to download
       return;
     }
 
@@ -125,10 +123,9 @@ class _DailyExpensesState extends State<DailyExpenses> {
       }
       serialNumber++;
 
-      // Alternating sky-blue background color
       if (i % 2 == 0) {
         for (int j = 0; j < row.cells.count; j++) {
-          row.cells[j].style?.backgroundBrush =
+          row.cells[j].style.backgroundBrush =
               PdfSolidBrush(PdfColor(135, 206, 250));
         }
       }
@@ -178,7 +175,7 @@ class _DailyExpensesState extends State<DailyExpenses> {
                     children: [
                       Text(
                         'Select Date:',
-                        style: Theme.of(context).textTheme.headline6,
+                        style: Theme.of(context).textTheme.titleLarge,
                       ),
                       const SizedBox(height: 16.0),
                       Row(
@@ -233,7 +230,7 @@ class _DailyExpensesState extends State<DailyExpenses> {
                             children: [
                               Text(
                                 '${_getSelectedCurrency()} $_totalAmount ',
-                                style: Theme.of(context).textTheme.subtitle1,
+                                style: Theme.of(context).textTheme.titleMedium,
                               ),
                               IconButton(
                                 icon: const Icon(Icons.download),
@@ -245,45 +242,37 @@ class _DailyExpensesState extends State<DailyExpenses> {
                           const SizedBox(height: 16.0),
                           if (_transactionDetails.isNotEmpty)
                             SingleChildScrollView(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text(
-                                    'Transaction Details:',
-                                    style: TextStyle(fontWeight: FontWeight.bold),
-                                  ),
-                                  const SizedBox(height: 8.0),
-                                  for (int i = 0; i < _transactionDetails.length; i++)
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Flexible(
-                                          child: Text(
-                                            _transactionDetails[i].split(":")[0],
-                                            style: const TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                            ), // Transaction
-                                          ),
-                                        ),
-                                        Text(
-                                          _transactionDetails[i].split(":")[1],
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .bodyText1,
-                                        ), // Date
-                                        
-                                        if (_transactionDetails[i].split(":").length > 3)
-                                          Text(
-                                            _transactionDetails[i].split(":")[3],
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .bodyText1,
-                                          ), // Amount
-                                      ],
-                                    ),
-                                  const SizedBox(height: 8.0),
+                              scrollDirection: Axis.horizontal,
+                              child: DataTable(
+                                columns: const [
+                                  DataColumn(label: Text('Transaction')),
+                                  DataColumn(label: Text('Date')),
+                                  //DataColumn(label: Text('Category')),
+                                  DataColumn(label: Text('Amount')),
                                 ],
+                                rows: List<DataRow>.generate(
+                                  _transactionDetails.length,
+                                  (index) {
+                                    List<String> detailParts = _transactionDetails[index].split(":");
+                                    return DataRow(
+                                      cells: [
+                                        DataCell(
+                                          Text(detailParts[0].trim()), // Transaction
+                                        ),
+                                        DataCell(
+                                          Text(detailParts[1].trim()), // Date
+                                        ),
+                                        // DataCell(
+                                        //   Text(detailParts[2].trim()), // Category
+                                        // ),
+                                        //Text(transaction.category.toString().split('.')[1].toUpperCase()),
+                                        DataCell(
+                                          Text(detailParts[3].trim()), // Amount
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                ),
                               ),
                             ),
                           const SizedBox(height: 16.0),

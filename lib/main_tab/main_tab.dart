@@ -4,13 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:pie_chart/pie_chart.dart';
 import 'package:expense_tracker/models/expense.dart';
 import 'package:expense_tracker/main_tab/pie.dart';
-import 'package:provider/provider.dart';
 
 class MainTab extends StatefulWidget {
   final List<Transaction> transactions;
   final Function(Transaction) onTransactionAdded;
 
-  MainTab({
+  const MainTab({super.key, 
     required this.transactions,
     required this.onTransactionAdded,
   });
@@ -38,9 +37,9 @@ class _MainTabState extends State<MainTab>
           children: [
             Card(
               elevation: 5.0,
-              margin: EdgeInsets.all(16.0),
+              margin: const EdgeInsets.all(16.0),
               child: Padding(
-                padding: EdgeInsets.all(16.0),
+                padding: const EdgeInsets.all(16.0),
                 child: Column(
                   children: [
                     const Text(
@@ -49,7 +48,7 @@ class _MainTabState extends State<MainTab>
                           fontSize: 18.0, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 20.0),
-                    Container(
+                    SizedBox(
                       width: 300.0,
                       height: 200.0,
                       child: PieChart(
@@ -71,7 +70,7 @@ class _MainTabState extends State<MainTab>
                         ),
                       ),
                     ),
-                    SizedBox(height: 20.0),
+                    const SizedBox(height: 20.0),
                     TextButton(
                       onPressed: () => _showLegendDialog(context),
                       child: const Text('Legend'),
@@ -134,7 +133,7 @@ class _MainTabState extends State<MainTab>
                         height: 12.0,
                         color: PieChartUtils.getCategoryColor(category),
                       ),
-                      SizedBox(width: 4.0),
+                      const SizedBox(width: 4.0),
                       Text(_buildCategoryName(
                           category.toString().split('.').last)),
                     ],

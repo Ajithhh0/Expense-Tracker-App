@@ -70,7 +70,7 @@ class TransactionItem extends StatelessWidget {
                     children: [
                       Text(
                         '${isCredit ? '+' : '-'} $selectedCurrency ${amount.abs().toStringAsFixed(2)}',
-                        style: TextStyle(
+                        style: const TextStyle(
                           color: Colors.white,
                           fontSize: 17.0,
                         ),
@@ -102,7 +102,7 @@ class TransactionItem extends StatelessWidget {
         if (transaction.type == TransactionType.Income)
           _buildTransactionCard(
             context,
-            '${transaction.title}',
+            transaction.title,
             transaction.amount,
             categoryIcons[transaction.category]!,
             Colors.green,
@@ -112,10 +112,10 @@ class TransactionItem extends StatelessWidget {
         if (transaction.type == TransactionType.Expense)
           _buildTransactionCard(
             context,
-            '${transaction.title}',
+            transaction.title,
             transaction.amount,
             categoryIcons[transaction.category],
-            Color.fromARGB(255, 243, 101, 101),
+            const Color.fromARGB(255, 243, 101, 101),
             Colors.white,
             false,
           ),

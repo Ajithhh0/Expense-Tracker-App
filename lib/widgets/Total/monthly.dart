@@ -55,7 +55,7 @@ class _MonthlyExpensesState extends State<MonthlyExpenses> {
   }
 
   String _getAmountWithSign(double amount) {
-    return (amount >= 0 ? '+' : '') + ' ${amount.abs()}';
+    return '${amount >= 0 ? '+' : '-'} ${amount.abs()}';
   }
 
   void _clearResult() {
@@ -158,7 +158,7 @@ class _MonthlyExpensesState extends State<MonthlyExpenses> {
 
       if (i % 2 == 0) {
         for (int j = 0; j < row.cells.count; j++) {
-          row.cells[j].style?.backgroundBrush =
+          row.cells[j].style.backgroundBrush =
               PdfSolidBrush(PdfColor(135, 206, 250));
         }
       }
@@ -190,7 +190,7 @@ class _MonthlyExpensesState extends State<MonthlyExpenses> {
     document.dispose();
 
     final path = (await getExternalStorageDirectory())?.path;
-    final fileName = 'Monthly-${monthName}.pdf';
+    final fileName = 'Monthly-$monthName.pdf';
     final file = File("$path/$fileName");
     await file.writeAsBytes(bytes, flush: true);
 
@@ -237,12 +237,12 @@ class _MonthlyExpensesState extends State<MonthlyExpenses> {
                         const SizedBox(height: 16.0),
                         Text(
                           'Year: $_selectedYear',
-                          style: Theme.of(context).textTheme.subtitle1,
+                          style: Theme.of(context).textTheme.titleMedium,
                         ),
                         const SizedBox(height: 8.0),
                         Text(
                           'Month: ${DateFormat('MMMM').format(DateTime(_selectedYear!, _selectedMonth!))}',
-                          style: Theme.of(context).textTheme.subtitle1,
+                          style: Theme.of(context).textTheme.titleMedium,
                         ),
                         const SizedBox(height: 16.0),
                         ElevatedButton(
@@ -272,7 +272,7 @@ class _MonthlyExpensesState extends State<MonthlyExpenses> {
                             children: [
                               Text(
                                 '${currencyNotifier.selectedCurrency} $_totalAmount ',
-                                style: Theme.of(context).textTheme.subtitle1,
+                                style: Theme.of(context).textTheme.titleMedium,
                               ),
                               IconButton(
                                 icon: const Icon(Icons.download),
@@ -284,45 +284,36 @@ class _MonthlyExpensesState extends State<MonthlyExpenses> {
                           const SizedBox(height: 16.0),
                           if (_transactionDetails.isNotEmpty)
                             SingleChildScrollView(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text(
-                                    'Transaction Details:',
-                                    style: TextStyle(fontWeight: FontWeight.bold),
-                                  ),
-                                  const SizedBox(height: 8.0),
-                                  for (int i = 0; i < _transactionDetails.length; i++)
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Flexible(
-                                          child: Text(
-                                            _transactionDetails[i].title,
-                                            style: const TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                            ), // Transaction
-                                          ),
-                                        ),
-                                        Text(
-                                          DateFormat('yyyy-MM-dd')
-                                              .format(_transactionDetails[i].date),
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .bodyText1,
-                                        ), // Date
-
-                                        Text(
-                                          '${currencyNotifier.selectedCurrency} ${_getAmountWithSign(_transactionDetails[i].amount)}',
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .bodyText1,
-                                        ), // Amount
-                                      ],
-                                    ),
-                                  const SizedBox(height: 8.0),
+                              scrollDirection: Axis.horizontal,
+                              child: DataTable(
+                                columns: const [
+                                  DataColumn(label: Text('Transaction')),
+                                  DataColumn(label: Text('Date')),
+                                  //DataColumn(label: Text('Category')),
+                                  DataColumn(label: Text('Amount')),
                                 ],
+                                rows: List<DataRow>.generate(
+                                  _transactionDetails.length,
+                                  (index) {
+                                    Transaction transaction = _transactionDetails[index] as Transaction;
+                                    return DataRow(
+                                      cells: [
+                                        DataCell(
+                                          Text(transaction.title),
+                                        ),
+                                        DataCell(
+                                          Text(DateFormat('yyyy-MM-dd').format(transaction.date)),
+                                        ),
+                                        //  DataCell(
+                                        //    Text(transaction.category.toString().split('.')[1].toUpperCase()),
+                                        //  ),
+                                        DataCell(
+                                          Text('${currencyNotifier.selectedCurrency} ${_getAmountWithSign(transaction.amount)}'),
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                ),
                               ),
                             ),
                           const SizedBox(height: 16.0),

@@ -24,7 +24,7 @@ class _NewExpenseState extends State<NewExpense> {
   final _amountController = TextEditingController();
   DateTime? _selectedDate;
   Category? _selectedCategory;
-  TextEditingController _searchController = TextEditingController();
+  final TextEditingController _searchController = TextEditingController();
   List<Category> filteredCategories = List.from(Category.values);
   bool _isCredit = false;
 
@@ -39,7 +39,7 @@ class _NewExpenseState extends State<NewExpense> {
               padding: const EdgeInsets.all(8.0),
               child: TextField(
                 controller: _searchController,
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   labelText: 'Search Categories',
                   prefixIcon: Icon(Icons.search),
                 ),
@@ -145,7 +145,7 @@ class _NewExpenseState extends State<NewExpense> {
       return;
     }
 
-    final amount = _isCredit ? enteredAmount! : -enteredAmount!;
+    final amount = _isCredit ? enteredAmount : -enteredAmount;
 
     final newTransaction = Transaction(
       title: _titleController.text,
@@ -325,7 +325,7 @@ class _NewExpenseState extends State<NewExpense> {
                     const SizedBox(height: 16),
                     Row(
                       children: [
-                        Text('Transaction Type:'),
+                        const Text('Transaction Type:'),
                         const SizedBox(width: 8),
                         DropdownButton<bool>(
                           value: _isCredit,
@@ -334,7 +334,7 @@ class _NewExpenseState extends State<NewExpense> {
                               _isCredit = value!;
                             });
                           },
-                          items: [
+                          items: const [
                             DropdownMenuItem<bool>(
                               value: false,
                               child: Text('Debit'),

@@ -1,6 +1,8 @@
+// total.dart
+
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:expense_tracker/models/expense.dart'; // Import the Transaction model
+import 'package:expense_tracker/models/expense.dart';
 import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
@@ -8,7 +10,7 @@ import 'package:syncfusion_flutter_pdf/pdf.dart';
 import 'package:expense_tracker/widgets/settings/currency_notifier.dart';
 
 class TotalExpenses extends StatefulWidget {
-  final List<dynamic> transactions; // Change the type to dynamic
+  final List<dynamic> transactions;
 
   const TotalExpenses({Key? key, required this.transactions}) : super(key: key);
 
@@ -57,8 +59,9 @@ class _TotalExpensesState extends State<TotalExpenses> {
       _transactionDetails = [];
     });
   }
+
   String _getAmountWithSign(double amount) {
-    return (amount >= 0 ? '+' : '-') + ' ${amount.abs()}';
+    return '${amount >= 0 ? '+' : '-'} ${amount.abs()}';
   }
 
   String _getSelectedCurrency() {
@@ -113,7 +116,7 @@ class _TotalExpensesState extends State<TotalExpenses> {
       // Alternating sky-blue background color
       if (i % 2 == 0) {
         for (int j = 0; j < row.cells.count; j++) {
-          row.cells[j].style?.backgroundBrush =
+          row.cells[j].style.backgroundBrush =
               PdfSolidBrush(PdfColor(135, 206, 250));
         }
       }
@@ -127,7 +130,7 @@ class _TotalExpensesState extends State<TotalExpenses> {
     totalRow.cells[3].style = PdfGridCellStyle(
       font: PdfStandardFont(PdfFontFamily.helvetica, 20, style: PdfFontStyle.bold),
     );
-    totalRow.cells[4].value = _totalAmount.toString();
+    totalRow.cells[4].value = _getAmountWithSign(_totalAmount!);
 
     grid.draw(bounds: const Rect.fromLTWH(0, 60, 0, 0), page: page);
 
@@ -163,7 +166,7 @@ class _TotalExpensesState extends State<TotalExpenses> {
                     children: [
                       Text(
                         'Select Date Range:',
-                        style: Theme.of(context).textTheme.headline6,
+                        style: Theme.of(context).textTheme.titleLarge,
                       ),
                       const SizedBox(height: 16.0),
                       Row(
@@ -271,7 +274,7 @@ class _TotalExpensesState extends State<TotalExpenses> {
                             children: [
                               Text(
                                 '${_getSelectedCurrency()} $_totalAmount ',
-                                style: Theme.of(context).textTheme.subtitle1,
+                                style: Theme.of(context).textTheme.titleMedium,
                               ),
                               IconButton(
                                 icon: const Icon(Icons.download),
@@ -291,34 +294,50 @@ class _TotalExpensesState extends State<TotalExpenses> {
                                     style: TextStyle(fontWeight: FontWeight.bold),
                                   ),
                                   const SizedBox(height: 8.0),
-                                  for (int i = 0; i < _transactionDetails.length; i++)
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Flexible(
-                                          child: Text(
-                                            _transactionDetails[i].split(":")[0],
-                                            style: const TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                            ), // Transaction
-                                          ),
+                                  DataTable(
+                                    columnSpacing: 20.0,
+                                    columns: [
+                                      DataColumn(
+                                        label: Text(
+                                          'Transaction',
+                                          style: TextStyle(fontWeight: FontWeight.bold),
                                         ),
-                                        Text(
-                                          _transactionDetails[i].split(":")[1],
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .bodyText1,
-                                        ), // Date
-                                        if (_transactionDetails[i].split(":").length > 3)
-                                          Text(
-                                            _transactionDetails[i].split(":")[3],
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .bodyText1,
-                                          ), // Amount
-                                      ],
+                                      ),
+                                      DataColumn(
+                                        label: Text(
+                                          'Date',
+                                          style: TextStyle(fontWeight: FontWeight.bold),
+                                        ),
+                                      ),
+                                      DataColumn(
+                                        label: Text(
+                                          'Amount',
+                                          style: TextStyle(fontWeight: FontWeight.bold),
+                                        ),
+                                      ),
+                                    ],
+                                    rows: List.generate(
+                                      _transactionDetails.length,
+                                      (index) {
+                                        List<String> details = _transactionDetails[index].split(':');
+                                        return DataRow(
+                                          cells: [
+                                            DataCell(
+                                              Text(details[0].trim()),
+                                            ),
+                                            DataCell(
+                                              Text(details[1].trim()),
+                                            ),
+                                            DataCell(
+                                              Text(details.length > 3
+                                                  ? details[3].trim()
+                                                  : _getAmountWithSign(double.parse(details[2].trim()))),
+                                            ),
+                                          ],
+                                        );
+                                      },
                                     ),
+                                  ),
                                   const SizedBox(height: 8.0),
                                 ],
                               ),

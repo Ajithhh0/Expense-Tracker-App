@@ -1,3 +1,5 @@
+// category.dart
+
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:expense_tracker/models/expense.dart';
@@ -6,7 +8,6 @@ import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:syncfusion_flutter_pdf/pdf.dart';
 import 'package:expense_tracker/widgets/settings/currency_notifier.dart';
-import 'package:expense_tracker/widgets/expenses_list/expense_item.dart';
 
 class CategorySelection extends StatefulWidget {
   final Function(dynamic) onCategorySelected;
@@ -27,7 +28,7 @@ class _CategorySelectionState extends State<CategorySelection> {
   double _totalExpenses = 0.0;
   List<String> _transactionDetails = [];
   bool _isCardVisible = false;
-  TextEditingController _searchController = TextEditingController();
+  final TextEditingController _searchController = TextEditingController();
   List<dynamic> filteredCategories = [];
 
   @override
@@ -70,8 +71,7 @@ class _CategorySelectionState extends State<CategorySelection> {
   }
 
   String _getAmountWithSign(double amount, TransactionType type) {
-    return (type == TransactionType.Income ? '+' : '-') +
-        ' ${amount.abs()}';
+    return '${type == TransactionType.Income ? '+' : '-'} ${amount.abs()}';
   }
 
   void _showCategories() {
@@ -84,7 +84,7 @@ class _CategorySelectionState extends State<CategorySelection> {
               padding: const EdgeInsets.all(8.0),
               child: TextField(
                 controller: _searchController,
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   labelText: 'Search Categories',
                   prefixIcon: Icon(Icons.search),
                 ),
@@ -103,7 +103,7 @@ class _CategorySelectionState extends State<CategorySelection> {
             Expanded(
               child: ListView.separated(
                 itemCount: Category.values.length,
-                separatorBuilder: (context, index) => Divider(),
+                separatorBuilder: (context, index) => const Divider(),
                 itemBuilder: (context, index) {
                   final category = Category.values[index];
                   final icon = categoryIcons[category] ?? Icons.category;
@@ -162,14 +162,19 @@ class _CategorySelectionState extends State<CategorySelection> {
     header.cells[1].value = 'Date';
     header.cells[2].value = 'Amount';
 
-    int serialNumber = 1;
     for (int i = 0; i < _transactionDetails.length; i++) {
       List<String> detailParts = _transactionDetails[i].split(":");
       PdfGridRow row = grid.rows.add();
       row.cells[0].value = detailParts[0].trim(); // Transaction
       row.cells[1].value = detailParts[1].trim(); // Date
       row.cells[2].value = detailParts[2].trim(); // Amount
-      serialNumber++;
+
+      if (i % 2 == 0) {
+        for (int j = 0; j < row.cells.count; j++) {
+          row.cells[j].style.backgroundBrush =
+              PdfSolidBrush(PdfColor(135, 206, 250));
+        }
+      }
     }
 
     PdfGridRow totalRow = grid.rows.add();
@@ -218,38 +223,44 @@ class _CategorySelectionState extends State<CategorySelection> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                        'Selected Category: ${_selectedCategory.toString().split(".")[1]}'),
+                    Text('Selected Category: ${_selectedCategory.toString().split(".")[1]}'),
                     const SizedBox(height: 16.0),
                     Text('Total Expenses: $_totalExpenses'),
                     const SizedBox(height: 8.0),
-                    Text(
+                    const Text(
                       'Transaction Details:',
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 8.0),
-                    for (String detail in _transactionDetails)
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Flexible(
-                            child: Text(
-                              detail.split(":")[0],
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                          Text(
-                            detail.split(":")[1],
-                            style: Theme.of(context).textTheme.bodyText1,
-                          ),
-                          Text(
-                            detail.split(":")[2],
-                            style: Theme.of(context).textTheme.bodyText1,
-                          ),
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: DataTable(
+                        columns: const [
+                          DataColumn(label: Text('Transaction')),
+                          DataColumn(label: Text('Date')),
+                          DataColumn(label: Text('Amount')),
                         ],
+                        rows: List<DataRow>.generate(
+                          _transactionDetails.length,
+                          (index) {
+                            List<String> detailParts = _transactionDetails[index].split(":");
+                            return DataRow(
+                              cells: [
+                                DataCell(
+                                  Text(detailParts[0].trim()), // Transaction
+                                ),
+                                DataCell(
+                                  Text(detailParts[1].trim()), // Date
+                                ),
+                                DataCell(
+                                  Text(detailParts[2].trim()), // Amount
+                                ),
+                              ],
+                            );
+                          },
+                        ),
                       ),
+                    ),
                     const SizedBox(height: 16.0),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,

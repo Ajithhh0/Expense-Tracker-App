@@ -7,6 +7,8 @@ import 'package:expense_tracker/theme/theme_provider.dart';
 import 'package:expense_tracker/widgets/settings/currency_notifier.dart'; // Import the CurrencyNotifier
 
 class SettingsPage extends StatefulWidget {
+  const SettingsPage({super.key});
+
   @override
   _SettingsPageState createState() => _SettingsPageState();
 }
