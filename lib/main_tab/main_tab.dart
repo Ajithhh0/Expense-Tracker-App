@@ -1,27 +1,25 @@
-// main_tab.dart
-
 import 'package:flutter/material.dart';
 import 'package:pie_chart/pie_chart.dart';
+import 'package:provider/provider.dart';
 import 'package:expense_tracker/models/expense.dart';
 import 'package:expense_tracker/main_tab/pie.dart';
+import 'package:expense_tracker/widgets/settings/currency_notifier.dart'; // Import the CurrencyNotifier
 
 class MainTab extends StatefulWidget {
   final List<Transaction> transactions;
   final Function(Transaction) onTransactionAdded;
 
-  const MainTab({super.key, 
+  const MainTab({
+    Key? key,
     required this.transactions,
     required this.onTransactionAdded,
-  });
+  }) : super(key: key);
 
   @override
   _MainTabState createState() => _MainTabState();
 }
 
-class _MainTabState extends State<MainTab>
-    with AutomaticKeepAliveClientMixin {
-  double incomeAmount = 0.0;
-
+class _MainTabState extends State<MainTab> with AutomaticKeepAliveClientMixin {
   @override
   bool get wantKeepAlive => true;
 
@@ -29,12 +27,47 @@ class _MainTabState extends State<MainTab>
   Widget build(BuildContext context) {
     super.build(context);
 
+    // Use the CurrencyNotifier to get the selected currency
+    final currencyNotifier = Provider.of<CurrencyNotifier>(context);
+
     return SingleChildScrollView(
       child: PageStorage(
         bucket: PageStorageBucket(),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+
+            Card(
+              elevation: 5.0,
+              margin: const EdgeInsets.all(20.0),
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [Colors.lightBlue,Colors.lightBlueAccent,Colors.blue,Colors.blueAccent, Colors.indigo, Colors.teal ],
+                  ),
+                  borderRadius : BorderRadius.circular(15.0),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(50.0), // Increase padding to make it a little bigger
+                  child: Column(
+                    children: [
+                      const Text(
+                        'Total Income',
+                        style: TextStyle(fontSize: 24.0, fontWeight: FontWeight.bold, color: Colors.white),
+                      ),
+                      const SizedBox(height: 20.0),
+                      Text(
+                        '${_calculateTotalIncome(currencyNotifier)}', // Pass the CurrencyNotifier to get the selected currency
+                        style: TextStyle(fontSize: 30.0, color: Colors.white),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            // Expense Distribution Card
             Card(
               elevation: 5.0,
               margin: const EdgeInsets.all(16.0),
@@ -44,14 +77,16 @@ class _MainTabState extends State<MainTab>
                   children: [
                     const Text(
                       'Expense Distribution',
-                      style: TextStyle(
-                          fontSize: 18.0, fontWeight: FontWeight.bold),
+                      style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 20.0),
                     SizedBox(
                       width: 300.0,
                       height: 200.0,
                       child: PieChart(
+                        legendOptions: LegendOptions(
+                          showLegends: false,
+                        ),
                         dataMap: _getDataMap(),
                         chartType: ChartType.disc,
                         animationDuration: const Duration(seconds: 5),
@@ -61,12 +96,6 @@ class _MainTabState extends State<MainTab>
                           showChartValuesInPercentage: true,
                           showChartValuesOutside: true,
                           showChartValues: true,
-                        ),
-                        legendOptions: const LegendOptions(
-                          showLegends: false,
-                          legendTextStyle: TextStyle(fontSize: 12),
-                          legendPosition: LegendPosition.bottom,
-                          showLegendsInRow: true,
                         ),
                       ),
                     ),
@@ -79,6 +108,9 @@ class _MainTabState extends State<MainTab>
                 ),
               ),
             ),
+
+            // Total Income Card with Gradient Theme
+            
           ],
         ),
       ),
@@ -90,8 +122,7 @@ class _MainTabState extends State<MainTab>
 
     for (Category category in Category.values) {
       double totalAmountForCategory = _amountForCategory(category);
-      dataMap[_buildCategoryName(category.toString().split('.').last)] =
-          totalAmountForCategory;
+      dataMap[_buildCategoryName(category.toString().split('.').last)] = totalAmountForCategory;
     }
 
     return dataMap;
@@ -102,19 +133,23 @@ class _MainTabState extends State<MainTab>
   }
 
   double _amountForCategory(Category category) {
-  return widget.transactions
-      .where((transaction) => transaction.category == category)
-      .fold(0.0, (double sum, Transaction transaction) {
-        if (transaction.type == TransactionType.Expense) {
+    return widget.transactions
+        .where((transaction) => transaction.category == category && transaction.type == TransactionType.Expense)
+        .fold(0.0, (double sum, Transaction transaction) {
           return sum - transaction.amount;
-        } else if (transaction.type == TransactionType.Income) {
-          return sum + transaction.amount;
-        } else {
-          return sum;
-        }
-      });
-}
+        });
+  }
 
+  String _calculateTotalIncome(CurrencyNotifier currencyNotifier) {
+    // Calculate the total income from transactions
+    double totalIncome = widget.transactions
+        .where((transaction) => transaction.type == TransactionType.Income)
+        .fold(0.0, (double sum, Transaction transaction) {
+          return sum + transaction.amount;
+        });
+
+    return '${currencyNotifier.selectedCurrency} ${totalIncome.toStringAsFixed(2)}';
+  }
 
   void _showLegendDialog(BuildContext context) {
     showDialog(
@@ -134,8 +169,7 @@ class _MainTabState extends State<MainTab>
                         color: PieChartUtils.getCategoryColor(category),
                       ),
                       const SizedBox(width: 4.0),
-                      Text(_buildCategoryName(
-                          category.toString().split('.').last)),
+                      Text(_buildCategoryName(category.toString().split('.').last)),
                     ],
                   ),
               ],

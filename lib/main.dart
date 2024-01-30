@@ -33,28 +33,33 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       theme: ThemeData.light().copyWith(
         cardTheme: const CardTheme(
-          color: Color.fromARGB(255, 192, 190, 185),
+          color: Color.fromARGB(255, 255, 255, 255),
         ),
-        scaffoldBackgroundColor: const Color.fromARGB(255, 255, 255, 255),
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Color.fromRGBO(255, 255, 255, 1),
+        scaffoldBackgroundColor: Colors.transparent, 
+        appBarTheme: AppBarTheme(
+          backgroundColor: Color.fromARGB(255, 219, 133, 133), 
         ),
       ),
       darkTheme: ThemeData.dark(),
       themeMode: themeProvider.getThemeMode(),
       home: Consumer<CurrencyNotifier>(
         builder: (context, currencyNotifier, child) {
-          return Expenses(
-            onTransactionAdded: ( amount) {},
-            transactions: const [], // Provide a list of transactions here
-            initialIncome: 0.0,
-            onUpdateCurrentIncome: (double updatedCurrentIncome) {
-              // Handle the update of currentIncome in the Income widget
-              // You can pass this function to the Income widget to update its state
-            },
+          return Container(
+            decoration: BoxDecoration(
+              color: Color.fromARGB(255, 255, 255, 255), 
+            ),
+            child: Expenses(
+              onTransactionAdded: (amount) {},
+              transactions: const [], 
+              initialIncome: 0.0,
+              onUpdateCurrentIncome: (double updatedCurrentIncome) {
+                
+              },
+            ),
           );
         },
       ),
     );
   }
 }
+
