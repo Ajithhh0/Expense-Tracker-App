@@ -37,7 +37,7 @@ class MyApp extends StatelessWidget {
         ),
         scaffoldBackgroundColor: Colors.transparent, 
         appBarTheme: AppBarTheme(
-          backgroundColor: Color.fromARGB(255, 219, 133, 133), 
+          backgroundColor: Color.fromARGB(255, 255, 255, 255), 
         ),
       ),
       darkTheme: ThemeData.dark(),
