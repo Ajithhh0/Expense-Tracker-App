@@ -160,7 +160,7 @@ class _ExpensesState extends State<Expenses> with TickerProviderStateMixin {
                   });
                 },
               )
-            : const Text('Expense Tracker'),
+            : const Text('Money Manager'),
         actions: [
           if (!_isSearching)
             IconButton(
