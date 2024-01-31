@@ -337,11 +337,11 @@ class _NewExpenseState extends State<NewExpense> {
                           items: const [
                             DropdownMenuItem<bool>(
                               value: false,
-                              child: Text('Debit'),
+                              child: Text('Expense'),
                             ),
                             DropdownMenuItem<bool>(
                               value: true,
-                              child: Text('Credit'),
+                              child: Text('Income'),
                             ),
                           ],
                         ),

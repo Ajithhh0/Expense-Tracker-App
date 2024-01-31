@@ -4,8 +4,11 @@ import 'package:provider/provider.dart';
 import 'package:expense_tracker/widgets/expenses.dart';
 import 'package:expense_tracker/theme/theme_provider.dart';
 import 'package:expense_tracker/widgets/settings/currency_notifier.dart';
+import 'package:expense_tracker/database/db_helper.dart';
 
-void main() {
+Future <void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await DbHelper.instance.initDatabase();
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
@@ -62,4 +65,3 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-

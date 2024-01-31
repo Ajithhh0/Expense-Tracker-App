@@ -10,6 +10,7 @@ import 'package:expense_tracker/widgets/Total/monthly.dart';
 import 'package:expense_tracker/widgets/Total/yearly.dart';
 import 'package:expense_tracker/widgets/Total/category.dart';
 import 'package:expense_tracker/main_tab/main_tab.dart';
+import 'package:expense_tracker/database/db_helper.dart';
 
 class Expenses extends StatefulWidget {
   final Function(_ExpensesState)? onExpensesStateChange;
@@ -21,9 +22,8 @@ class Expenses extends StatefulWidget {
     Key? key,
     this.onExpensesStateChange,
     required this.onTransactionAdded,
-    required List<Transaction> transactions,
     required this.initialIncome,
-    required this.onUpdateCurrentIncome,
+    required this.onUpdateCurrentIncome, required List transactions,
   }) : super(key: key);
 
   @override
@@ -33,12 +33,32 @@ class Expenses extends StatefulWidget {
 }
 
 class _ExpensesState extends State<Expenses> with TickerProviderStateMixin {
+  late final DbHelper dbHelper;
   final List<Transaction> _registeredTransactions = [];
   List<Transaction> _displayedTransactions = [];
   bool _isSearching = false;
   final TextEditingController _searchController = TextEditingController();
   TabController? _tabController;
   double currentIncome = 0.0;
+
+  @override
+  void initState() {
+    super.initState();
+    dbHelper = DbHelper.instance;
+    _tabController = TabController(vsync: this, length: 7);
+
+    // Retrieve all transactions from the local database
+    dbHelper.getAllTransactions().then((transactions) {
+      setState(() {
+        _registeredTransactions.addAll(transactions);
+        _displayedTransactions = _registeredTransactions
+            .where((transaction) => transaction.title
+                .toLowerCase()
+                .contains(_searchController.text.toLowerCase()))
+            .toList();
+      });
+    });
+  }
 
   void _openAddTransactionOverlay() {
     showModalBottomSheet(
@@ -51,13 +71,16 @@ class _ExpensesState extends State<Expenses> with TickerProviderStateMixin {
     );
   }
 
-  void _addTransaction(Transaction transaction) {
+void _addTransaction(Transaction transaction) async {
+  try {
+    await dbHelper.insertTransaction(transaction);
     setState(() {
       _registeredTransactions.add(transaction);
       _displayedTransactions = _registeredTransactions
-          .where((transaction) => transaction.title
-              .toLowerCase()
-              .contains(_searchController.text.toLowerCase()))
+          .where((transaction) =>
+              transaction.title.toLowerCase().contains(
+                    _searchController.text.toLowerCase(),
+                  ))
           .toList();
     });
 
@@ -67,7 +90,11 @@ class _ExpensesState extends State<Expenses> with TickerProviderStateMixin {
     widget.onUpdateCurrentIncome(currentIncome);
 
     _notifyStateChange();
+  } catch (e) {
+    print("Error adding transaction: $e");
+    // Handle the error, e.g., show an error message to the user
   }
+}
 
   void _removeTransaction(Transaction transaction) {
     setState(() {
@@ -111,7 +138,8 @@ class _ExpensesState extends State<Expenses> with TickerProviderStateMixin {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => TotalExpenses(transactions: _registeredTransactions),
+        builder: (context) =>
+            TotalExpenses(transactions: _registeredTransactions),
       ),
     );
   }
@@ -127,14 +155,6 @@ class _ExpensesState extends State<Expenses> with TickerProviderStateMixin {
 
   void _notifyStateChange() {
     widget.onExpensesStateChange?.call(this);
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(vsync: this, length: 7);
-    _displayedTransactions = List.from(_registeredTransactions);
-    currentIncome = widget.initialIncome;
   }
 
   @override

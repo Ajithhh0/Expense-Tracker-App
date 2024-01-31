@@ -276,7 +276,52 @@ const categoryIcons = {
   String get formattedDate {
     return formatter.format(date);
   }
+
+   Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'title': title,
+      'amount': amount,
+      'date': date.toIso8601String(),
+      'category': category.toString().split('.').last,
+      'type': type.toString().split('.').last,
+    };
+  }
+  factory Transaction.fromMap(Map<String, dynamic> map) {
+    try {
+      return Transaction(
+        id: map['id'],
+        title: map['title'],
+        amount: map['amount'],
+        date: DateTime.parse(map['date']),
+        category: Category.values.firstWhere(
+          (e) => e.toString().split('.').last == map['category'],
+        ),
+        type: TransactionType.values.firstWhere(
+          (e) => e.toString().split('.').last == map['type'],
+        ),
+      );
+    } catch (e) {
+      // Handle parsing errors or missing values here
+      return Transaction(
+        id: map['id'],
+        title: map['title'],
+        amount: map['amount'],
+        date: DateTime.now(),
+        category: Category.food, // Provide a default category or adjust accordingly
+        type: TransactionType.Expense, // Provide a default type or adjust accordingly
+      );
+    }
+  }
+  
+  
+  // Helper method to convert a string to a TransactionType enum
+  static TransactionType _typeFromString(String typeString) {
+    return TransactionType.values.firstWhere((e) => e.toString().split('.').last == typeString);
+  }
 }
+
+
 
 
 enum TransactionType {
