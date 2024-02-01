@@ -31,7 +31,7 @@ class DbHelper {
       onCreate: (db, version) {
         return db.execute('''
           CREATE TABLE $transactionsTable(
-            id TEXT PRIMARY KEY,
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
             title TEXT,
             amount REAL,
             date TEXT,
@@ -43,12 +43,24 @@ class DbHelper {
     );
   }
 
-  Future<void> insertTransaction(ExpenseModel.Transaction transaction) async {
+  insertTransaction(ExpenseModel.Transaction transaction) async {
     final db = await instance.database;
-    await db.insert(
+    var res = await db.insert(
       transactionsTable,
       transaction.toMap(),
       conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+    return res;
+  }
+
+  Future<void> updateTransaction(
+      ExpenseModel.Transaction updatedTransaction) async {
+    final db = await instance.database;
+    await db.update(
+      transactionsTable,
+      updatedTransaction.toMap(),
+      where: 'id = ?',
+      whereArgs: [updatedTransaction.id],
     );
   }
 

@@ -4,13 +4,11 @@ import 'package:uuid/uuid.dart';
 import 'package:intl/intl.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
-
 final formatter = DateFormat.yMd();
 
 const uuid = Uuid();
 
 // ignore: constant_identifier_names
-
 
 enum Category {
   food,
@@ -93,6 +91,12 @@ enum Category {
   salary,
 }
 
+extension CategoryExtension on Category {
+  String get displayName {
+    return toString().split('.').last.replaceAll('_', ' ');
+  }
+}
+
 const categoryIcons = {
   Category.food: FontAwesomeIcons.utensils,
   Category.travel: FontAwesomeIcons.plane,
@@ -119,7 +123,6 @@ const categoryIcons = {
   Category.misc: FontAwesomeIcons.question,
   Category.household: FontAwesomeIcons.house,
   Category.air_tickets: FontAwesomeIcons.ticketSimple,
-  
   Category.beauty: FontAwesomeIcons.palette,
   Category.bike: FontAwesomeIcons.bicycle,
   Category.books: FontAwesomeIcons.book,
@@ -175,8 +178,6 @@ const categoryIcons = {
   Category.salary: FontAwesomeIcons.moneyBill1,
 };
 
-
-
 // class Expense {
 //   Expense({
 //     required this.title,
@@ -195,7 +196,6 @@ const categoryIcons = {
 //     return formatter.format(date);
 //   }
 // }
-
 
 // class ExpenseBucket {
 //   const ExpenseBucket({
@@ -256,30 +256,31 @@ const categoryIcons = {
 //     return sum;
 //   }
 // }
- class Transaction {
+class Transaction {
   Transaction({
     required this.title,
     required this.amount,
     required this.date,
     required this.category,
     required this.type, // Add a type to differentiate between Expense and Income
-    required String id,
-  }) : id = uuid.v4();
+    this.id,
+  }); //: id = uuid.v4();
 
-  final String id;
+  int? id;
   final String title;
   final double amount;
   final DateTime date;
   final Category category;
-  final TransactionType type; // Enum to differentiate between Expense and Income
+  final TransactionType
+      type; // Enum to differentiate between Expense and Income
 
   String get formattedDate {
     return formatter.format(date);
   }
 
-   Map<String, dynamic> toMap() {
+  Map<String, dynamic> toMap() {
     return {
-      'id': id,
+      //'id': id,
       'title': title,
       'amount': amount,
       'date': date.toIso8601String(),
@@ -287,6 +288,7 @@ const categoryIcons = {
       'type': type.toString().split('.').last,
     };
   }
+
   factory Transaction.fromMap(Map<String, dynamic> map) {
     try {
       return Transaction(
@@ -308,21 +310,20 @@ const categoryIcons = {
         title: map['title'],
         amount: map['amount'],
         date: DateTime.now(),
-        category: Category.food, // Provide a default category or adjust accordingly
-        type: TransactionType.Expense, // Provide a default type or adjust accordingly
+        category:
+            Category.food, // Provide a default category or adjust accordingly
+        type: TransactionType
+            .Expense, // Provide a default type or adjust accordingly
       );
     }
   }
-  
-  
+
   // Helper method to convert a string to a TransactionType enum
   static TransactionType _typeFromString(String typeString) {
-    return TransactionType.values.firstWhere((e) => e.toString().split('.').last == typeString);
+    return TransactionType.values
+        .firstWhere((e) => e.toString().split('.').last == typeString);
   }
 }
-
-
-
 
 enum TransactionType {
   Expense,
@@ -336,9 +337,11 @@ class TransactionBucket {
     required this.type,
   });
 
-  TransactionBucket.forCategory(List<Transaction> allTransactions, this.category, this.type)
+  TransactionBucket.forCategory(
+      List<Transaction> allTransactions, this.category, this.type)
       : transactions = allTransactions
-            .where((transaction) => transaction.category == category && transaction.type == type)
+            .where((transaction) =>
+                transaction.category == category && transaction.type == type)
             .toList();
 
   final Category category;

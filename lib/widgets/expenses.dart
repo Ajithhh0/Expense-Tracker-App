@@ -23,7 +23,8 @@ class Expenses extends StatefulWidget {
     this.onExpensesStateChange,
     required this.onTransactionAdded,
     required this.initialIncome,
-    required this.onUpdateCurrentIncome, required List transactions,
+    required this.onUpdateCurrentIncome,
+    required List transactions,
   }) : super(key: key);
 
   @override
@@ -48,53 +49,72 @@ class _ExpensesState extends State<Expenses> with TickerProviderStateMixin {
     _tabController = TabController(vsync: this, length: 7);
 
     // Retrieve all transactions from the local database
-    dbHelper.getAllTransactions().then((transactions) {
-      setState(() {
-        _registeredTransactions.addAll(transactions);
-        _displayedTransactions = _registeredTransactions
-            .where((transaction) => transaction.title
-                .toLowerCase()
-                .contains(_searchController.text.toLowerCase()))
-            .toList();
-      });
+    // dbHelper.getAllTransactions().then((transactions) {
+    //   setState(() {
+    //     _registeredTransactions.addAll(transactions);
+    //     _displayedTransactions = _registeredTransactions
+    //         .where((transaction) => transaction.title
+    //             .toLowerCase()
+    //             .contains(_searchController.text.toLowerCase()))
+    //         .toList();
+    //   });
+    // });
+    init();
+  }
+
+  init() async {
+    var res = await dbHelper.getAllTransactions();
+    setState(() {
+      _registeredTransactions.addAll(res);
+      _displayedTransactions = _registeredTransactions
+          .where((transaction) => transaction.title
+              .toLowerCase()
+              .contains(_searchController.text.toLowerCase()))
+          .toList();
     });
   }
 
   void _openAddTransactionOverlay() {
     showModalBottomSheet(
-      useSafeArea: true,
+      //useSafeArea: true,
       isScrollControlled: true,
       context: context,
       builder: (ctx) => NewExpense(
         onAddTransaction: _addTransaction,
+        onEditTransaction: (oldTransaction, newTransaction) {
+          print('Editing transaction: $oldTransaction to $newTransaction');
+        },
       ),
     );
+    
   }
 
-void _addTransaction(Transaction transaction) async {
-  try {
-    await dbHelper.insertTransaction(transaction);
-    setState(() {
-      _registeredTransactions.add(transaction);
-      _displayedTransactions = _registeredTransactions
-          .where((transaction) =>
-              transaction.title.toLowerCase().contains(
-                    _searchController.text.toLowerCase(),
-                  ))
-          .toList();
-    });
 
-    widget.onTransactionAdded(transaction);
-    currentIncome -= transaction.amount;
+  void _addTransaction(Transaction transaction) async {
+    try {
+      var res = await dbHelper.insertTransaction(transaction);
+      transaction.id = res;
+      
+      setState(() {
+        _registeredTransactions.add(transaction);
+        _displayedTransactions = _registeredTransactions
+            .where((transaction) => transaction.title.toLowerCase().contains(
+                  _searchController.text.toLowerCase(),
+                ))
+            .toList();
+      });
 
-    widget.onUpdateCurrentIncome(currentIncome);
+      widget.onTransactionAdded(transaction);
+      currentIncome -= transaction.amount;
 
-    _notifyStateChange();
-  } catch (e) {
-    print("Error adding transaction: $e");
-    // Handle the error, e.g., show an error message to the user
+      widget.onUpdateCurrentIncome(currentIncome);
+
+      _notifyStateChange();
+    } catch (e) {
+      print("Error adding transaction: $e");
+      // Handle the error, e.g., show an error message to the user
+    }
   }
-}
 
   void _removeTransaction(Transaction transaction) {
     setState(() {
@@ -132,6 +152,34 @@ void _addTransaction(Transaction transaction) async {
         ),
       ),
     );
+  }
+
+  void _editTransaction(
+      Transaction oldTransaction, Transaction newTransaction) async {
+    try {
+      await dbHelper.updateTransaction(newTransaction);
+
+      setState(() {
+        _registeredTransactions.remove(oldTransaction);
+        _displayedTransactions.remove(oldTransaction);
+
+        _registeredTransactions.add(newTransaction);
+        _displayedTransactions.add(newTransaction);
+
+        _displayedTransactions = _registeredTransactions
+            .where((transaction) => transaction.title.toLowerCase().contains(
+                  _searchController.text.toLowerCase(),
+                ))
+            .toList();
+      });
+
+      widget.onUpdateCurrentIncome(
+          currentIncome + oldTransaction.amount - newTransaction.amount);
+
+      _notifyStateChange();
+    } catch (e) {
+      print("Error editing transaction: $e");
+    }
   }
 
   void _navigateToTotalTransactions() {
@@ -238,16 +286,22 @@ void _addTransaction(Transaction transaction) async {
               ? ExpensesList(
                   transactions: _displayedTransactions,
                   onRemoveTransaction: _removeTransaction,
+                  onEditTransaction: _editTransaction,
                 )
-              : Row(
-                  children: [
-                    Expanded(
-                      child: ExpensesList(
-                        transactions: _displayedTransactions,
-                        onRemoveTransaction: _removeTransaction,
+              : Container(
+                  width: double.infinity,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: ExpensesList(
+                          transactions: _displayedTransactions,
+                          onRemoveTransaction: _removeTransaction,
+                          onEditTransaction: _editTransaction,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 )
           : TabBarView(
               controller: _tabController,
@@ -261,6 +315,7 @@ void _addTransaction(Transaction transaction) async {
                 ExpensesList(
                   transactions: _registeredTransactions,
                   onRemoveTransaction: _removeTransaction,
+                  onEditTransaction: _editTransaction,
                 ),
                 DailyExpenses(transactions: _registeredTransactions),
                 MonthlyExpenses(transactions: _registeredTransactions),
@@ -269,8 +324,7 @@ void _addTransaction(Transaction transaction) async {
                   onCategorySelected: (selectedCategory) {
                     double totalExpenses =
                         _expensesForCategory(selectedCategory);
-                    _showTotalExpensesSnackBar(
-                        selectedCategory, totalExpenses);
+                    _showTotalExpensesSnackBar(selectedCategory, totalExpenses);
                   },
                   allTransactions: _registeredTransactions,
                 ),
