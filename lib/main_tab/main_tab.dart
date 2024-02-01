@@ -3,7 +3,7 @@ import 'package:pie_chart/pie_chart.dart';
 import 'package:provider/provider.dart';
 import 'package:expense_tracker/models/expense.dart';
 import 'package:expense_tracker/main_tab/pie.dart';
-import 'package:expense_tracker/widgets/settings/currency_notifier.dart'; // Import the CurrencyNotifier
+import 'package:expense_tracker/widgets/settings/currency_notifier.dart'; 
 
 class MainTab extends StatefulWidget {
   final List<Transaction> transactions;
@@ -27,7 +27,7 @@ class _MainTabState extends State<MainTab> with AutomaticKeepAliveClientMixin {
   Widget build(BuildContext context) {
     super.build(context);
 
-    // Use the CurrencyNotifier to get the selected currency
+    
     final currencyNotifier = Provider.of<CurrencyNotifier>(context);
 
     return SingleChildScrollView(
@@ -45,29 +45,29 @@ class _MainTabState extends State<MainTab> with AutomaticKeepAliveClientMixin {
                   gradient: const LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
-                    colors: [Colors.lightBlue,Colors.lightBlueAccent,Colors.blue,Colors.blueAccent, Colors.indigo, Colors.teal ],
+                    colors: [Color.fromARGB(255, 252, 252, 252),Color.fromARGB(255, 248, 248, 248),],
                   ),
                   borderRadius : BorderRadius.circular(15.0),
                 ),
                 child: Padding(
-                  padding: const EdgeInsets.all(50.0), // Increase padding to make it a little bigger
+                  padding: const EdgeInsets.all(50.0), 
                   child: Column(
                     children: [
                       const Text(
                         'Total Income',
-                        style: TextStyle(fontSize: 24.0, fontWeight: FontWeight.bold, color: Colors.white),
+                        style: TextStyle(fontSize: 24.0, fontWeight: FontWeight.bold, color: Color.fromARGB(255, 97, 137, 51)),
                       ),
                       const SizedBox(height: 20.0),
                       Text(
-                        '${_calculateTotalIncome(currencyNotifier)}', // Pass the CurrencyNotifier to get the selected currency
-                        style: TextStyle(fontSize: 30.0, color: Colors.white),
+                        '${_calculateTotalIncome(currencyNotifier)}', 
+                        style: TextStyle(fontSize: 30.0, color: Color.fromARGB(255, 97, 137, 51)),
                       ),
                     ],
                   ),
                 ),
               ),
             ),
-            // Expense Distribution Card
+            
             Card(
               elevation: 5.0,
               margin: const EdgeInsets.all(16.0),
