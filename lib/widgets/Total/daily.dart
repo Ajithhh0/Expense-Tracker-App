@@ -24,27 +24,33 @@ class _DailyExpensesState extends State<DailyExpenses> {
   List<String> _transactionDetails = [];
 
   void _calculateDailyExpenses() {
-    if (_selectedDate == null) {
-      return;
-    }
-
-    double totalAmount = 0.0;
-    List<String> transactionDetails = [];
-
-    for (dynamic transaction in widget.transactions) {
-      if (transaction is Transaction && transaction.date.isAtSameMomentAs(_selectedDate!)) {
-        totalAmount += transaction.amount;
-        transactionDetails.add(
-          '${transaction.title} : ${transaction.date.toString().split(" ")[0]} : ${transaction.category} : ${_getSelectedCurrency()} ${_getAmountWithSign(transaction.amount)}',
-        );
-      }
-    }
-
-    setState(() {
-      _totalAmount = totalAmount;
-      _transactionDetails = transactionDetails;
-    });
+  if (_selectedDate == null) {
+    return;
   }
+
+  double totalAmount = 0.0;
+  List<String> transactionDetails = [];
+
+  for (dynamic transaction in widget.transactions) {
+    print('Transaction: $transaction');
+    if (transaction is Transaction &&
+        transaction.date.isAtSameMomentAs(_selectedDate!)) {
+      totalAmount += transaction.amount;
+      transactionDetails.add(
+        '${transaction.title} : ${transaction.date.toString().split(" ")[0]} : ${transaction.category} : ${_getSelectedCurrency()} ${_getAmountWithSign(transaction.amount)}',
+      );
+    }
+  }
+
+  print('Total Amount: $totalAmount');
+  print('Transaction Details: $transactionDetails');
+
+  setState(() {
+    _totalAmount = totalAmount;
+    _transactionDetails = transactionDetails;
+  });
+}
+
 
   String _getAmountWithSign(double amount) {
     return '${amount >= 0 ? '+' : '-'} ${amount.abs()}';
@@ -113,14 +119,17 @@ class _DailyExpensesState extends State<DailyExpenses> {
       row.cells[0].value = serialNumber.toString();
       row.cells[1].value = detailParts[0].trim(); // Transaction
       row.cells[2].value = detailParts[1].trim(); // Date
-      if (detailParts.length > 3) {
-        String category = detailParts[2].trim().replaceAll('Category.', '');
-        row.cells[3].value = category.toUpperCase();
-        row.cells[4].value = detailParts[3].trim(); // Amount
-      } else {
-        row.cells[3].value = ''; // Empty for Income
-        row.cells[4].value = detailParts[2].trim(); // Amount
-      }
+      if (detailParts.length >= 3) {
+  String category = detailParts[2].trim().replaceAll('Category.', '');
+  if (detailParts.length > 3) {
+    row.cells[3].value = category.toUpperCase();
+    row.cells[4].value = detailParts[3].trim(); // Amount
+  } else {
+    row.cells[3].value = category.toUpperCase(); // Category
+    row.cells[4].value = detailParts[2].trim(); // Amount
+  }
+}
+
       serialNumber++;
 
       if (i % 2 == 0) {

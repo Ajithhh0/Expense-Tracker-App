@@ -8,7 +8,7 @@ final formatter = DateFormat.yMd();
 
 const uuid = Uuid();
 
-// ignore: constant_identifier_names
+
 
 enum Category {
   food,
