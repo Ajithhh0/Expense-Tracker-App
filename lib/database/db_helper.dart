@@ -73,7 +73,7 @@ class DbHelper {
     });
   }
 
-  Future<void> deleteTransaction(String id) async {
+  Future<void> deleteTransaction(int id) async {
     final db = await instance.database;
     await db.delete(
       transactionsTable,

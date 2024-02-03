@@ -59,6 +59,7 @@ class _ExpensesState extends State<Expenses> with TickerProviderStateMixin {
     //         .toList();
     //   });
     // });
+
     init();
   }
 
@@ -86,15 +87,13 @@ class _ExpensesState extends State<Expenses> with TickerProviderStateMixin {
         },
       ),
     );
-    
   }
-
 
   void _addTransaction(Transaction transaction) async {
     try {
       var res = await dbHelper.insertTransaction(transaction);
       transaction.id = res;
-      
+
       setState(() {
         _registeredTransactions.add(transaction);
         _displayedTransactions = _registeredTransactions
@@ -112,13 +111,16 @@ class _ExpensesState extends State<Expenses> with TickerProviderStateMixin {
       _notifyStateChange();
     } catch (e) {
       print("Error adding transaction: $e");
-      // Handle the error, e.g., show an error message to the user
     }
   }
+void _removeTransaction(Transaction transaction) async {
+  try {
+    
+    await dbHelper.deleteTransaction(transaction.id!);
 
-  void _removeTransaction(Transaction transaction) {
     setState(() {
       _registeredTransactions.remove(transaction);
+
       _displayedTransactions = _registeredTransactions
           .where((transaction) => transaction.title
               .toLowerCase()
@@ -152,7 +154,11 @@ class _ExpensesState extends State<Expenses> with TickerProviderStateMixin {
         ),
       ),
     );
+  } catch (e) {
+    print("Error deleting transaction: $e");
   }
+}
+
 
   void _editTransaction(
       Transaction oldTransaction, Transaction newTransaction) async {
