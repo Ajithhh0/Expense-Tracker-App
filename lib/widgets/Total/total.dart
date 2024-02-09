@@ -1,13 +1,12 @@
-// total.dart
-
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:expense_tracker/models/expense.dart';
+import 'package:expense_tracker/models/expense.dart' as ExpenseModel;
 import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:syncfusion_flutter_pdf/pdf.dart';
 import 'package:expense_tracker/widgets/settings/currency_notifier.dart';
+import 'package:expense_tracker/database/db_helper.dart';
 
 class TotalExpenses extends StatefulWidget {
   final List<dynamic> transactions;
@@ -24,20 +23,34 @@ class _TotalExpensesState extends State<TotalExpenses> {
   double? _totalAmount;
   List<String> _transactionDetails = [];
 
-  void _calculateTotal() {
+  void _calculateTotal() async {
     if (_startDate == null || _endDate == null) {
       return;
     }
 
+    print('Start Date: $_startDate');
+    print('End Date: $_endDate');
+
     double totalAmount = 0.0;
     List<String> transactionDetails = [];
 
-    for (dynamic transaction in widget.transactions) {
-      if (transaction is Transaction &&
-          transaction.date.isAfter(_startDate!) &&
-          transaction.date.isBefore(_endDate!) ||
-          transaction.date.isAtSameMomentAs(_startDate!) ||
-          transaction.date.isAtSameMomentAs(_endDate!)) {
+    // Fetch transactions from the database
+    List<ExpenseModel.Transaction> transactions = await DbHelper.instance.getAllTransactions();
+
+    // Debug: Print out the dates of transactions
+    for (ExpenseModel.Transaction transaction in transactions) {
+      print('Transaction Date: ${transaction.date}');
+    }
+
+    // Filter transactions based on the date range
+    for (ExpenseModel.Transaction transaction in transactions) {
+      // Adjusted date comparison logic
+      if (transaction.date.isAtSameMomentAs(_startDate!) ||
+          transaction.date.isAtSameMomentAs(_endDate!) ||
+          (transaction.date.isAfter(_startDate!) &&
+              transaction.date.isBefore(_endDate!)) ||
+          (transaction.date.isAtSameMomentAs(_startDate!) &&
+              transaction.date.isAtSameMomentAs(_endDate!))) {
         totalAmount += transaction.amount;
         transactionDetails.add(
           '${transaction.title} : ${transaction.date.toString().split(" ")[0]} : ${transaction.category} : ${_getSelectedCurrency()} ${_getAmountWithSign(transaction.amount)}',
@@ -71,7 +84,7 @@ class _TotalExpensesState extends State<TotalExpenses> {
   }
 
   Future<void> _downloadTotalDetails() async {
-    if (_totalAmount == null || _transactionDetails.isEmpty) {
+    if (_totalAmount != null && _transactionDetails.isNotEmpty) {
       // No data to download
       return;
     }
@@ -256,7 +269,7 @@ class _TotalExpensesState extends State<TotalExpenses> {
                 ),
               ),
               const SizedBox(height: 16.0),
-              if (_totalAmount != null)
+              if (_totalAmount != null && _transactionDetails.isNotEmpty)
                 SingleChildScrollView(
                   child: Card(
                     elevation: 4.0,
@@ -284,64 +297,63 @@ class _TotalExpensesState extends State<TotalExpenses> {
                             ],
                           ),
                           const SizedBox(height: 16.0),
-                          if (_transactionDetails.isNotEmpty)
-                            SingleChildScrollView(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text(
-                                    'Transaction Details:',
-                                    style: TextStyle(fontWeight: FontWeight.bold),
-                                  ),
-                                  const SizedBox(height: 8.0),
-                                  DataTable(
-                                    columnSpacing: 20.0,
-                                    columns: [
-                                      DataColumn(
-                                        label: Text(
-                                          'Transaction',
-                                          style: TextStyle(fontWeight: FontWeight.bold),
-                                        ),
+                          SingleChildScrollView(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Transaction Details:',
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                                const SizedBox(height: 8.0),
+                                DataTable(
+                                  columnSpacing: 20.0,
+                                  columns: [
+                                    DataColumn(
+                                      label: Text(
+                                        'Transaction',
+                                        style: TextStyle(fontWeight: FontWeight.bold),
                                       ),
-                                      DataColumn(
-                                        label: Text(
-                                          'Date',
-                                          style: TextStyle(fontWeight: FontWeight.bold),
-                                        ),
-                                      ),
-                                      DataColumn(
-                                        label: Text(
-                                          'Amount',
-                                          style: TextStyle(fontWeight: FontWeight.bold),
-                                        ),
-                                      ),
-                                    ],
-                                    rows: List.generate(
-                                      _transactionDetails.length,
-                                      (index) {
-                                        List<String> details = _transactionDetails[index].split(':');
-                                        return DataRow(
-                                          cells: [
-                                            DataCell(
-                                              Text(details[0].trim()),
-                                            ),
-                                            DataCell(
-                                              Text(details[1].trim()),
-                                            ),
-                                            DataCell(
-                                              Text(details.length > 3
-                                                  ? details[3].trim()
-                                                  : _getAmountWithSign(double.parse(details[2].trim()))),
-                                            ),
-                                          ],
-                                        );
-                                      },
                                     ),
+                                    DataColumn(
+                                      label: Text(
+                                        'Date',
+                                        style: TextStyle(fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
+                                    DataColumn(
+                                      label: Text(
+                                        'Amount',
+                                        style: TextStyle(fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
+                                  ],
+                                  rows: List.generate(
+                                    _transactionDetails.length,
+                                    (index) {
+                                      List<String> details = _transactionDetails[index].split(':');
+                                      return DataRow(
+                                        cells: [
+                                          DataCell(
+                                            Text(details[0].trim()),
+                                          ),
+                                          DataCell(
+                                            Text(details[1].trim()),
+                                          ),
+                                          DataCell(
+                                            Text(details.length > 3
+                                                ? details[3].trim()
+                                                : _getAmountWithSign(double.parse(details[2].trim()))),
+                                          ),
+                                        ],
+                                      );
+                                    },
                                   ),
-                                  const SizedBox(height: 8.0),
-                                ],
-                              ),
+                                ),
+                                const SizedBox(height: 8.0),
+                              ],
                             ),
+                          ),
                           const SizedBox(height: 16.0),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.end,

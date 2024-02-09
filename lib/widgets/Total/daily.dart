@@ -9,6 +9,7 @@ import 'package:provider/provider.dart';
 import 'package:syncfusion_flutter_pdf/pdf.dart';
 import 'package:expense_tracker/widgets/settings/currency_notifier.dart';
 
+
 class DailyExpenses extends StatefulWidget {
   final List<dynamic> transactions;
 
@@ -34,7 +35,9 @@ class _DailyExpensesState extends State<DailyExpenses> {
   for (dynamic transaction in widget.transactions) {
     print('Transaction: $transaction');
     if (transaction is Transaction &&
-        transaction.date.isAtSameMomentAs(_selectedDate!)) {
+        transaction.date.year == _selectedDate!.year &&
+        transaction.date.month == _selectedDate!.month &&
+        transaction.date.day == _selectedDate!.day) {
       totalAmount += transaction.amount;
       transactionDetails.add(
         '${transaction.title} : ${transaction.date.toString().split(" ")[0]} : ${transaction.category} : ${_getSelectedCurrency()} ${_getAmountWithSign(transaction.amount)}',
@@ -120,15 +123,15 @@ class _DailyExpensesState extends State<DailyExpenses> {
       row.cells[1].value = detailParts[0].trim(); // Transaction
       row.cells[2].value = detailParts[1].trim(); // Date
       if (detailParts.length >= 3) {
-  String category = detailParts[2].trim().replaceAll('Category.', '');
-  if (detailParts.length > 3) {
-    row.cells[3].value = category.toUpperCase();
-    row.cells[4].value = detailParts[3].trim(); // Amount
-  } else {
-    row.cells[3].value = category.toUpperCase(); // Category
-    row.cells[4].value = detailParts[2].trim(); // Amount
-  }
-}
+        String category = detailParts[2].trim().replaceAll('Category.', '');
+        if (detailParts.length > 3) {
+          row.cells[3].value = category.toUpperCase();
+          row.cells[4].value = detailParts[3].trim(); // Amount
+        } else {
+          row.cells[3].value = category.toUpperCase(); // Category
+          row.cells[4].value = detailParts[2].trim(); // Amount
+        }
+      }
 
       serialNumber++;
 
@@ -143,10 +146,12 @@ class _DailyExpensesState extends State<DailyExpenses> {
     PdfGridRow totalRow = grid.rows.add();
     totalRow.cells[3].value = 'Total:';
     totalRow.cells[4].style = PdfGridCellStyle(
-      font: PdfStandardFont(PdfFontFamily.helvetica, 20, style: PdfFontStyle.bold),
+      font: PdfStandardFont(PdfFontFamily.helvetica, 20,
+          style: PdfFontStyle.bold),
     );
     totalRow.cells[3].style = PdfGridCellStyle(
-      font: PdfStandardFont(PdfFontFamily.helvetica, 20, style: PdfFontStyle.bold),
+      font: PdfStandardFont(PdfFontFamily.helvetica, 20,
+          style: PdfFontStyle.bold),
     );
     totalRow.cells[4].value = _totalAmount.toString();
 
@@ -262,11 +267,13 @@ class _DailyExpensesState extends State<DailyExpenses> {
                                 rows: List<DataRow>.generate(
                                   _transactionDetails.length,
                                   (index) {
-                                    List<String> detailParts = _transactionDetails[index].split(":");
+                                    List<String> detailParts =
+                                        _transactionDetails[index].split(":");
                                     return DataRow(
                                       cells: [
                                         DataCell(
-                                          Text(detailParts[0].trim()), // Transaction
+                                          Text(detailParts[0]
+                                              .trim()), // Transaction
                                         ),
                                         DataCell(
                                           Text(detailParts[1].trim()), // Date

@@ -4,7 +4,7 @@ import 'package:pie_chart/pie_chart.dart';
 import 'package:provider/provider.dart';
 import 'package:expense_tracker/models/expense.dart';
 import 'package:expense_tracker/main_tab/pie.dart';
-import 'package:expense_tracker/widgets/settings/currency_notifier.dart'; 
+import 'package:expense_tracker/widgets/settings/currency_notifier.dart';
 
 class MainTab extends StatefulWidget {
   final List<Transaction> transactions;
